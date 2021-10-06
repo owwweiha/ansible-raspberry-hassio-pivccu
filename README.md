@@ -12,7 +12,7 @@ Install piVCCU (ccu3) and Home Assistant on Raspberry PI OS lite (Debian Buster)
 + Run `ansible-playbook --inventory-file raspberry.ini main.yml`
 + Podman tasks might take a while to finish
 + After playbook has finished, configure your piVCCU and add your devices
-+ To link hass.io and piVCCU, create/edit `configuration.yml` and add (receive piVCCU IP via `pivccu-info`):
++ To link hass.io and piVCCU, create/edit `configuration.yml` in `/home/pi/homeassistant/` and add (receive piVCCU IP via `pivccu-info`):
 ```yaml
 homematic:
   interfaces:
