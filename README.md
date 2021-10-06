@@ -2,7 +2,7 @@
 Install piVCCU (ccu3) and Home Assistant on Raspberry PI OS lite (Debian Buster)
 + Tested on Raspberry PI 4B with Raspberry Pi OS lite installed (e.g., via rpi-imager)
 + Using `HM-MOD-RPI-PCB` or `RPI-RF-MOD` on GPIO header (tested with HM-MOD-RPI-PCB)
-+ For the `HB-RF-USB(-2)` and `HB-RF-ETH` this playbook was *not* tested and steps are currently not implemented
++ For the `HB-RF-USB(-2)` and `HB-RF-ETH` this playbook was **not tested** and steps are currently not implemented
 + Static IP assigned to raspberry pi on router
 + Ansible installed (tested with `ansible 2.10.5`)
 + Playbook follows install instructions of https://github.com/alexreinert/piVCCU/blob/master/docs/setup/raspberrypi.md for `HM-MOD-RPI-PCB` or `RPI-RF-MOD` with `bluetooth disabled` and dynamic IP
