@@ -1,0 +1,5 @@
+---
+- name: Create ll alias
+  ansible.builtin.lineinfile:
+    path: /home/pi/.bashrc
+    line: "alias ll='ls -la'"

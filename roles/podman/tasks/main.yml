@@ -1,0 +1,23 @@
+---
+# podman not included in debian buster repos. if using debian bullseye, apt install podman would be sufficient.
+# https://www.calmdevelopment.de/blog/2019/podman-install-debian.html
+- name: Add the public key
+  ansible.builtin.apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: 8BECF1637AD8C79D 
+    state: present
+  become: true
+
+- name: Add the package repository
+  ansible.builtin.apt_repository:
+    repo: deb http://ppa.launchpad.net/projectatomic/ppa/ubuntu bionic main
+    state: present
+  become: true
+
+- name: Install podman
+  ansible.builtin.apt:
+    name: podman
+    state: present
+    update_cache: true
+  become: true
+

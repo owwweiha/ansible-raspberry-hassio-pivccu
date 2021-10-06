@@ -1,0 +1,35 @@
+---
+- name: Update apt repo and cache
+  ansible.builtin.apt:
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 3600
+  become: true
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+    force_apt_get: yes
+  become: true
+
+- name: Check if reboot is needed
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: reboot_required_file
+
+- name: Reboot the pi if kernel updated
+  ansible.builtin.reboot:
+    connect_timeout: 5
+    reboot_timeout: 300
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: uptime
+  when: reboot_required_file.stat.exists
+
+- name: Create cronjob for apt update and upgrade
+  ansible.builtin.cron:
+    name: "apt update and upgrade"
+    minute: "0"
+    hour: "3"
+    job: "sudo apt update && sudo apt upgrade -y"

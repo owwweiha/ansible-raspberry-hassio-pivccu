@@ -1,0 +1,123 @@
+---
+- name: Get the public key of the repository
+  ansible.builtin.get_url:
+    url: https://www.pivccu.de/piVCCU/public.key
+    dest: /tmp/pivccu-public.key
+
+- name: Add the public key
+  ansible.builtin.apt_key:
+    file: /tmp/pivccu-public.key
+    state: present
+  become: true
+
+- name: Add the package repository
+  ansible.builtin.apt_repository:
+    repo: deb https://www.pivccu.de/piVCCU stable main
+    state: present
+    filename: pivccu
+  become: true
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: 'yes'
+  become: true
+
+- name: Install the neccessary kernel modules
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  become: true
+  loop:
+    - build-essential
+    - bison
+    - flex
+    - libssl-dev
+    - raspberrypi-kernel-headers
+    - pivccu-modules-dkms
+
+# Install the neccessary device tree patches 
+# (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, 
+# for the HB-RF-USB(-2) and HB-RF-ETH this step is not neccessary)
+- name: Install the neccessary device tree patches
+  ansible.builtin.apt:
+    name: pivccu-modules-raspberrypi 
+    state: present
+    update_cache: true
+  become: true
+
+# Enable UART GPIO pins (not required on Raspberry Pi 2) 
+# (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, 
+# for the HB-RF-USB this step is not neccessary)
+- name: Enable UART GPIO pins - Option 1 Disabled bluetooth (prefered)
+  ansible.builtin.lineinfile:
+    path: /boot/config.txt
+    line: "dtoverlay=pi3-disable-bt"
+  become: true
+
+# Disable serial console in command line 
+# (You can skip this step, if you do not use the HM-MOD-RPI-PCB or RPI-RF-MOD on GPIO header, 
+# for the HB-RF-USB this step is not neccessary)
+- name: Disable serial console in command line
+  ansible.builtin.shell: |
+    sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+    sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+  args:
+    executable: /bin/bash
+    warn: false
+  become: true
+
+# Instead of removing dhcpcd5, we disable the service. see https://github.com/alexreinert/piVCCU/issues/214#issuecomment-565036579
+#- name: Update your config - remove dhcpcd5
+#  ansible.builtin.apt:
+#    name: dhcpcd5
+#    state: absent
+#  become: true
+- name: Update your config - disable dhcpcd, enable networking
+  ansible.builtin.shell: |
+    systemctl disable dhcpcd.service
+    systemctl enable networking
+  args:
+    executable: /bin/bash
+    warn: false
+  become: true
+
+- name: Update your config - bridge-utils
+  ansible.builtin.apt:
+    name: bridge-utils
+    update_cache: true
+    state: present
+  become: true
+
+- name: Update your config - network
+  ansible.builtin.blockinfile:
+    path: /etc/network/interfaces
+    block: |
+      source-directory /etc/network/interfaces.d
+
+      auto lo
+      iface lo inet loopback
+
+      iface {{ ansible_default_ipv4.interface }} inet manual
+
+      auto br0
+      iface br0 inet dhcp
+        bridge_ports {{ ansible_default_ipv4.interface }}
+  become: true
+
+- name: Reboot the system
+  ansible.builtin.reboot:
+    connect_timeout: 5
+    reboot_timeout: 300
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: uptime
+  become: true
+
+- name: Install CCU container / To use CCU3 firmware 
+  ansible.builtin.apt:
+    name: pivccu3
+    update_cache: true
+    state: present
+  become: true

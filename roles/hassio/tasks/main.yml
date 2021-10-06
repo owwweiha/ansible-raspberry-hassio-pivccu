@@ -1,0 +1,29 @@
+---
+- name: Install git
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  become: true
+
+- name: Git checkout for hassio podman script
+  ansible.builtin.git:
+    repo: 'https://github.com/owwweiha/update-homeassistant-container-rp4.git'
+    dest: /home/pi/update-homeassistant-container-rp4
+
+- name: Make config dir
+  ansible.builtin.file:
+    path: /home/pi/homeassistant
+    state: directory
+    mode: '0755'
+
+# might take some time
+- name: Run hassio podman script
+  ansible.builtin.shell: bash /home/pi/update-homeassistant-container-rp4/update-homeassistant.sh /home/pi/homeassistant
+
+- name: Create cronjob for updating hassio image
+  ansible.builtin.cron:
+    name: "update hassio image"
+    minute: "0"
+    hour: "2"
+    job: "bash /home/pi/update-homeassistant-container-rp4/update-homeassistant.sh /home/pi/homeassistant >> /home/pi/update-homeassistant.log"

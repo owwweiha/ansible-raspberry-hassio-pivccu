@@ -1,0 +1,9 @@
+---
+- name: Setup pivccu and hassio
+  hosts: all
+  roles:
+  - update-upgrade
+  - make-alias
+  - pivccu 
+  - podman
+  - hassio
