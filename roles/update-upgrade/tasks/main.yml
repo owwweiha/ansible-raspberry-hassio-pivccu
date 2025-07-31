@@ -32,4 +32,4 @@
     name: "apt update and upgrade"
     minute: "0"
     hour: "3"
-    job: "sudo apt update && sudo apt upgrade -y"
+    job: "sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -yq upgrade"
